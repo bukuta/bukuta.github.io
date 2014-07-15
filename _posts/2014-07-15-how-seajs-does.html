@@ -52,3 +52,45 @@ fetch
 2.6.2 检查参数，区分开发环境和合并环境，define(id,deps,factory)|define(id,factory)|define(deps,factory)
 2.6.2.1 若无deps,则静态分析factory源码，取出require('xxx/id'),作为本模块的依赖
 2.6.3 被define了的模块至少处于saved状态，如果此模块是被'夹带过来'的(请求了a模块，但a的源码文件同时也包含了b的定义，多见于文件合并)
+
+
+3 发布后
+
+4 Module的状态
+ 0:INIT 初始化，只有uri，和可能的依赖模块 因为可能先require('xxx'),也可能先define(id,deps,factory)
+    new Module(uri,deps)时设置
+ 1:FETCHING 获取模块源码文件
+```javascript
+    mod_parent.load(){
+      mod_sub.fetch()  
+    }
+```
+ 2:SAVED 模块已经过define处理 但依赖模块不确定,叫DEFINED更好？
+    define()
+    模块可能不经历fetching阶段就直接变为saved
+ 3:LOADING 让模块可用前提是必须让其依赖可用
+    mod.load()
+ 4:LOADED 所有依赖子模块都已经LOADED，处于可用，可状态
+   解决的所有的依赖项后
+   分析自己的依赖项，或者子模块LOADED之后通知父模块的检查
+ 5:EXECUTING 模块被使用时所需进行的执行，模块只执行一次，结果被缓存
+   Module.use，置于mod的callback中的mod.exec()
+ 6:EXECUTED 模块执行过，再次被导入时，将返回缓存的结果
+    mod.exec执行之后
+
+5 模块定位
+  模块开发时使用的require('mod_a')
+  发布后的define('mod_a',['mod_b','mod_c'],factory);
+    `Module.get(id)<=Module.resolve(id,parents_uri)<=seajs.resolve(id,uri)=id2Url(id,uri)`
+    Module.resolve(id,baseuri)抛出事件，外部可seajs.on('resolve',function(){})拦截修改处理
+    `Module.prototype.resolve()=>Module.resolve(id,baseuri)`分析本模块依赖的模块ids=>uris
+
+6 辅助函数
+  id2Uri(id,baseuri)
+    parseAlias(id)
+    parsePatchs(id)
+    parseVars(id)
+    normalize(id)
+    addbase(id,baseuri)
+    parseDependencies(factory_code)
+      源码正则搜索require('xxx');
