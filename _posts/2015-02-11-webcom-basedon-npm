@@ -1,0 +1,106 @@
+npm私有仓库：
+	scope:@wdfe
+
+包资源、内容：
+	可以任意包含：html,js,css,tpl,image
+	包可以是纯html
+		html+css
+		html+js
+		tpl+js
+		js
+		css+js
+		任意组合都可以加载image
+
+包定义：
+	@wd/shop
+	package:
+{
+	“html”:”html/shop.html”,
+	“js”:”shop.js”,
+	“css”:”shop.css”,
+	“root”:”./“
+}	
+
+shop.html:
+
+<div class=“image-wrapper">
+	<img src=“” data-src=“xxx">
+</div>
+
+shop.css:
+.image-wrapper{
+
+}
+.image-wrapper img{
+
+}
+
+shop.js
+define([‘jquery’,’underscore’],function($,_){
+	var $wrapper=$(‘.image-wrapper’);
+	$wrapper.find(‘img’).each(function(i,e){$(this).attr(’src’,$(this).data(’src’));})
+	$wrapper.on(‘click’,function(e){
+		console.log(‘click’,e);
+	});
+})
+
+使用：
+	xxx.html/tpl
+	<wd:module name=“@wdfe/shop”/>
+
+预编译过程：
+	
+	wdcp debug
+	wdcp release
+	
+	1.检索html/tpl 	
+		(a:fs遍历html/tpl/或者config配置，遍历出所有目标文件)
+		(b:node-htmlparse解析目标文件，生成json-dom树)
+		
+		查找模块引用标签
+		
+		分析标签，
+		(c:遍历dom树，查找目标标签，生成标签列表）
+		
+		生成模块列表
+		(d:解析标签属性，提取模块名，保存到全局列表)
+
+	2.下载模块及依赖
+		根据模块列表，生成package.json，执行npm install
+	
+
+	3.将模块资源按类型插入目标文件
+		遍历标签列表
+			根据模块类型，提取资源（html/tpl/js）
+			生成节点，替换原标签节点
+	
+	4.路径引用处理
+		根据目标文件规则，移动资源到目标目录
+		更新引用路径
+			html 引用js,css,img
+			css 引用 css,img,font
+			js 引用 css,img,tpl
+	
+	5.	提取css
+		将页面内style,link,提取出来，生成合并文件，精简样式，更新图片字体资源路径,（或md5命名，上传静床，生成url）
+		移除页面所有样式，替换成新样式
+	6. 提取js
+		将页面内<script>提取出来，解析依赖关系，下载依赖包，按统计权重合并脚本，生成standalone脚本若干，（或md5命名，上传静床，生成url）
+		替换页面内所有脚本为新生成文件路径。
+
+	7.htmlify
+		将json-dom树转回html	
+
+
+debug vs release
+	debug不合并文件或者合并文件，但不上传，debug=1(不合并),2(合并),3(线上)定义几个步骤，
+	release ,合并,压缩，命名简化。
+
+
+打包js,css时，按行统计，上传使用情况，再根据页面访问权重，计算合并策略
+
+
+开发时，如果当前模块微改，clone当前模块，修改代码，发布模块
+	保存根基引用，方便更新，merge.
+	模块需要readme.md,说明模块业务、功能，使用场景，
+
