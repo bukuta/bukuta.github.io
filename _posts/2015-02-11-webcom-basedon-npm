@@ -1,3 +1,9 @@
+---
+layout: default
+title: fe module design
+---
+##{{page.title}}
+
 npm私有仓库：
 	scope:@wdfe
 
@@ -14,28 +20,37 @@ npm私有仓库：
 包定义：
 	@wd/shop
 	package:
+  ```
 {
 	“html”:”html/shop.html”,
 	“js”:”shop.js”,
 	“css”:”shop.css”,
 	“root”:”./“
 }	
+```
 
 shop.html:
 
+```
 <div class=“image-wrapper">
 	<img src=“” data-src=“xxx">
 </div>
+```
 
 shop.css:
+
+```
 .image-wrapper{
 
 }
 .image-wrapper img{
 
 }
+```
 
 shop.js
+
+```
 define([‘jquery’,’underscore’],function($,_){
 	var $wrapper=$(‘.image-wrapper’);
 	$wrapper.find(‘img’).each(function(i,e){$(this).attr(’src’,$(this).data(’src’));})
@@ -43,10 +58,13 @@ define([‘jquery’,’underscore’],function($,_){
 		console.log(‘click’,e);
 	});
 })
+```
 
 使用：
 	xxx.html/tpl
+```
 	<wd:module name=“@wdfe/shop”/>
+```
 
 预编译过程：
 	
